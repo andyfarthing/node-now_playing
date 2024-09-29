@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,400;0,700;1,300&display=swap');
+
+.container {
+  padding: 25px;
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 0px 25px;
+  grid-auto-flow: row;
+  justify-items: start;
+  align-items: center;
+  grid-template-areas:
+    "artwork header"
+    "artwork artist"
+    "artwork title"
+    "artwork label";
+}
+
+.header {
+  grid-area: header;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  font-size: 50px;
+  padding: 0px 10px;
+  line-height: 55px;
+  margin-top: -5px;
+  background: red;
+}
+
+.artwork { grid-area: artwork; }
+
+.artist {
+  grid-area: artist;
+  font-family: "Poppins", sans-serif;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 45px;
+}
+
+.title {
+  grid-area: title;
+  font-family: "Poppins", sans-serif;
+  font-size: 35px;
+  margin-top: -10px;
+}
+
+.label {
+  grid-area: label;
+  font-family: "Poppins", sans-serif;
+  font-size: 25px;
+  font-style: italic;
+}
+
+.fade-in-left {
+	-webkit-animation: fade-in-left 0.75s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+	        animation: fade-in-left 0.75s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+}
+
+.fade-in {
+	-webkit-animation: fade-in 2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+	        animation: fade-in 2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+}
+
+/**
+ * ----------------------------------------
+ * animation fade-in
+ * ----------------------------------------
+ */
+ @-webkit-keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/**
+ * ----------------------------------------
+ * animation fade-in-left
+ * ----------------------------------------
+ */
+ @-webkit-keyframes fade-in-left {
+  0% {
+    -webkit-transform: translateX(-50px);
+            transform: translateX(-50px);
+    opacity: 0;
+  }
+  100% {
+    -webkit-transform: translateX(0);
+            transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes fade-in-left {
+  0% {
+    -webkit-transform: translateX(-50px);
+            transform: translateX(-50px);
+    opacity: 0;
+  }
+  100% {
+    -webkit-transform: translateX(0);
+            transform: translateX(0);
+    opacity: 1;
+  }
+}
