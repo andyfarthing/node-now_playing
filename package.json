@@ -11,6 +11,7 @@
 	},
 	"dependencies": {
 		"express": "^4.21.0",
+		"musicbrainz-api": "^0.19.1",
 		"next": "14.2.13",
 		"prolink-connect": "https://github.com/andyfarthing/prolink-connect/archive/refs/tags/v0.11.1.tar.gz",
 		"react": "^18",

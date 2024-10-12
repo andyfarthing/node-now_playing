@@ -3,6 +3,7 @@ import {
 	MixstatusProcessor,
 	MixstatusMode,
 } from "prolink-connect";
+import { getMusicBrainzArtwork } from "./musicbrainz.js";
 
 export const startProlinkNetwork = async () => {
 	const proLinkNetwork = await connectToProlinkNetwork();
@@ -78,10 +79,10 @@ const connectToProlinkNetwork = async () => {
 };
 
 const deviceStates = {
-	1: { state: undefined, currentTrackMetadata: undefined },
-	2: { state: undefined, currentTrackMetadata: undefined },
-	3: { state: undefined, currentTrackMetadata: undefined },
-	4: { state: undefined, currentTrackMetadata: undefined },
+	3: { state: undefined },
+	4: { state: undefined },
+	1: { state: undefined },
+	2: { state: undefined },
 };
 
 const startListener = (proLinkNetwork) => {
@@ -125,19 +126,31 @@ const getTrack = async (proLinkNetwork, state) => {
 	} else {
 		track.label = { name: "unknown label" };
 	}
-	const artist = track.artist.name;
-	const title = track.title;
-	const label = track.label.name;
-
-	const { deviceId } = state;
-	deviceStates[deviceId].currentTrackMetadata = track;
 	console.log(
-		`New track on player ${deviceId}: ${artist} - ${title} [${label}]`
+		`Player ${state.deviceId}: ${track.artist.name} - ${track.title} [${track.label.name}]`
 	);
 	return track;
 };
+
 const getArtwork = async (proLinkNetwork, state, track) => {
+	const [proLinkArtwork, musicBrainzArtwork] = await Promise.all([
+		getProLinkArtwork(proLinkNetwork, state, track),
+		getMusicBrainzArtwork(track),
+	]);
+	if (musicBrainzArtwork) {
+		console.log("Using MusicBrainz artwork");
+		return musicBrainzArtwork;
+	} else {
+		console.log("Using local artwork");
+		return proLinkArtwork;
+	}
+};
+
+const getProLinkArtwork = async (proLinkNetwork, state, track) => {
 	const { trackDeviceId, trackSlot, trackType } = state;
+	// Append "_m" to filename to get higher resolution artwork
+	// https://deep-symmetry.zulipchat.com/#narrow/stream/275855-dysentery-.26-crate-digger/topic/High.20res.20album.20art/near/289004764
+	track.artwork.path = track.artwork.path.replace(".jpg", "_m.jpg");
 	// Get artwork from the databse. This is returned as a Buffer object
 	const buffer = await proLinkNetwork.db.getArtwork({
 		deviceId: trackDeviceId,
