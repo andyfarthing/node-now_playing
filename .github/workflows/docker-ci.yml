@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - development  # Trigger on both master and development branches
 
 jobs:
   bump-build-push:
@@ -48,7 +49,7 @@ jobs:
 
           # Create commit and push changes
           git commit -m "ci: Bump version"
-          git push origin master --follow-tags  # Push commit and tags to the remote repository
+          git push origin ${{ github.ref }} --follow-tags  # Push commit and tags to the remote repository
 
       # Log in to GitHub Container Registry
       - name: Log in to GitHub Container Registry
@@ -64,12 +65,18 @@ jobs:
           # Get the repository name from the GitHub context and convert it to lowercase
           REPO_NAME=$(echo "${GITHUB_REPOSITORY#*/}" | tr '[:upper:]' '[:lower:]')
 
-          # Build Docker image and tag it with both 'latest' and the version tag
-          docker build -t ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:latest -t ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:${{ env.VERSION }} .
-
-          # Push the Docker image to GitHub Container Registry
-          docker push ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:latest
-          docker push ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:${{ env.VERSION }}
+          # Conditional tags based on the branch
+          if [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
+            # For master branch, use 'latest' and the version tag
+            docker build -t ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:latest -t ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:${{ env.VERSION }} .
+            docker push ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:latest
+            docker push ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:${{ env.VERSION }}
+          elif [[ "${GITHUB_REF}" == "refs/heads/development" ]]; then
+            # For development branch, use 'dev' and the version tag
+            docker build -t ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:dev -t ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:${{ env.VERSION }}-dev .
+            docker push ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:dev
+            docker push ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:${{ env.VERSION }}-dev
+          fi
 
       # Push updated version back to the repository
       - name: Push updated version
@@ -78,4 +85,4 @@ jobs:
           git config user.email "${{ github.actor }}@users.noreply.github.com"
           git add package.json
           git commit -m "ci: Bump version to ${{ env.VERSION }}"
-          git push origin master
+          git push origin ${{ github.ref }}
