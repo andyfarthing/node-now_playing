@@ -24,13 +24,7 @@ jobs:
         git config --global user.email "contact@andyfarthing.com"
         git config --global user.name "Andy Farthing"
 
-    # Set up Node.js environment
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 22
-
-    # Install dependencies
+      # Install dependencies
     - name: Install dependencies
       run: npm install
 
@@ -39,6 +33,12 @@ jobs:
       run: |
         NEW_VERSION=$(npm version patch -m "ci: Bump version to %s")
         git push --follow-tags
+
+    # Set up Node.js environment
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 22
 
     # Log in to GitHub Container Registry
     - name: Log in to GitHub Container Registry
