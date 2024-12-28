@@ -64,8 +64,8 @@ jobs:
           # Get the repository name from the GitHub context and convert it to lowercase
           REPO_NAME=$(echo "${GITHUB_REPOSITORY#*/}" | tr '[:upper:]' '[:lower:]')
 
-          # Build and tag Docker image
-          docker build -t ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:latest .
+          # Build Docker image and tag it with both 'latest' and the version tag
+          docker build -t ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:latest -t ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:${{ env.VERSION }} .
 
           # Push the Docker image to GitHub Container Registry
           docker push ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:latest
