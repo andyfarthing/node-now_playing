@@ -29,11 +29,17 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    # Bump version
-    - name: Bump version and create git commit
+    - name: Force bump version and create git commit
       run: |
-        NEW_VERSION=$(npm version patch -m "ci: Bump version to %s")
-        git push --follow-tags
+        # Bump version patch without checking for a clean working directory
+        npm version patch --no-git-tag-version -m "ci: Bump version to %s"
+
+        # Add the changes to Git
+        git add package.json package-lock.json  # Add changes manually
+
+        # Create commit and push changes
+        git commit -m "ci: Bump version"
+        git push origin master --follow-tags  # Push commit and tags to the remote repository
 
     # Set up Node.js environment
     - name: Set up Node.js
