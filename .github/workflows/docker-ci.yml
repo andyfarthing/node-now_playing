@@ -47,9 +47,13 @@ jobs:
           # Add the changes to Git
           git add package.json package-lock.json
 
-          # Create commit and push changes
-          git commit -m "ci: Bump version"
-          git push origin ${{ github.ref }} --follow-tags  # Push commit and tags to the remote repository
+          # Only commit if there are changes
+          if ! git diff --cached --quiet; then
+            git commit -m "ci: Bump version"
+            git push origin ${{ github.ref }} --follow-tags  # Push commit and tags to the remote repository
+          else
+            echo "No changes to commit"
+          fi
 
       # Log in to GitHub Container Registry
       - name: Log in to GitHub Container Registry
@@ -81,8 +85,13 @@ jobs:
       # Push updated version back to the repository
       - name: Push updated version
         run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-          git add package.json
-          git commit -m "ci: Bump version to ${{ env.VERSION }}"
-          git push origin ${{ github.ref }}
+          # Only push the version change if there was a commit
+          if ! git diff --cached --quiet; then
+            git config user.name "${{ github.actor }}"
+            git config user.email "${{ github.actor }}@users.noreply.github.com"
+            git add package.json
+            git commit -m "ci: Bump version to ${{ env.VERSION }}"
+            git push origin ${{ github.ref }}
+          else
+            echo "No version change to push"
+          fi
