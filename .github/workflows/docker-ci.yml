@@ -10,68 +10,72 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the code
-    - name: Checkout code
-      uses: actions/checkout@v3
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Ensure clean working directory
-      run: |
-        git reset --hard
-        git clean -fd
-        git status
+      # Ensure clean working directory
+      - name: Ensure clean working directory
+        run: |
+          git reset --hard
+          git clean -fd
+          git status
 
-    - name: Set Git user identity
-      run: |
-        git config --global user.email "contact@andyfarthing.com"
-        git config --global user.name "Andy Farthing"
+      # Set Git user identity
+      - name: Set Git user identity
+        run: |
+          git config --global user.email "contact@andyfarthing.com"
+          git config --global user.name "Andy Farthing"
 
-      # Install dependencies
-    - name: Install dependencies
-      run: npm install
+      # Set up Node.js and install dependencies
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
 
-    - name: Force bump version and create git commit
-      run: |
-        # Bump version patch without checking for a clean working directory
-        npm version patch --no-git-tag-version -m "ci: Bump version to %s"
+      - name: Install dependencies
+        run: npm install
 
-        # Add the changes to Git
-        git add package.json package-lock.json  # Add changes manually
+      # Force bump version and create git commit
+      - name: Force bump version and create git commit
+        run: |
+          # Bump version patch and store the new version in an environment variable
+          NEW_VERSION=$(npm version patch --no-git-tag-version -m "ci: Bump version to %s")
+          echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
-        # Create commit and push changes
-        git commit -m "ci: Bump version"
-        git push origin master --follow-tags  # Push commit and tags to the remote repository
+          # Add the changes to Git
+          git add package.json package-lock.json
 
-    # Set up Node.js environment
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 22
+          # Create commit and push changes
+          git commit -m "ci: Bump version"
+          git push origin master --follow-tags  # Push commit and tags to the remote repository
 
-    # Log in to GitHub Container Registry
-    - name: Log in to GitHub Container Registry
-      uses: docker/login-action@v2
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      # Log in to GitHub Container Registry
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    # Build Docker image with both latest and version tags
-    - name: Build Docker image
-      run: |
-        docker build -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:latest \
-                     -t ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:${{ env.VERSION }} .
+      # Build Docker image and push it
+      - name: Build and Push Docker image
+        run: |
+          # Get the repository name from the GitHub context and convert it to lowercase
+          REPO_NAME=$(echo "${GITHUB_REPOSITORY#*/}" | tr '[:upper:]' '[:lower:]')
 
-    # Push Docker image to GHCR
-    - name: Push Docker image
-      run: |
-        docker push ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:latest
-        docker push ghcr.io/${{ github.repository_owner }}/${{ github.repository }}:${{ env.VERSION }}
+          # Build and tag Docker image
+          docker build -t ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:latest .
 
-    # Push updated package.json with bumped version back to the repository
-    - name: Push updated version
-      run: |
-        git config user.name "${{ github.actor }}"
-        git config user.email "${{ github.actor }}@users.noreply.github.com"
-        git add package.json
-        git commit -m "ci: Bump version to ${{ env.VERSION }}"
-        git push origin master
+          # Push the Docker image to GitHub Container Registry
+          docker push ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:latest
+          docker push ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:${{ env.VERSION }}
+
+      # Push updated version back to the repository
+      - name: Push updated version
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git add package.json
+          git commit -m "ci: Bump version to ${{ env.VERSION }}"
+          git push origin master
