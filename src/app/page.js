@@ -50,7 +50,7 @@ const Index = () => {
 				{metadata.track?.title || "Title"}
 			</div>
 			<div className={`${styles.label} ${styles["fade-in-left"]}`}>
-				[{metadata.track?.label.name || "[Label]"}]
+				[{metadata.track?.label.name || "Label"}]
 			</div>
 		</div>
 	);
