@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import artworkPlaceholder from "./images/artwork-placeholder.png";
+import artworkPlaceholder from "../public/images/artwork-placeholder.png";
 
-import styles from "./css/now-playing-layout.module.css";
+import styles from "./styles/now-playing-layout.module.css";
 
 let webSocket;
 if (typeof window !== "undefined") {
@@ -50,7 +50,7 @@ const Index = () => {
 				{metadata.track?.title || "Title"}
 			</div>
 			<div className={`${styles.label} ${styles["fade-in-left"]}`}>
-				[{metadata.track?.label.name || "[Label]"}]
+				[{metadata.track?.label.name || "Label"}]
 			</div>
 		</div>
 	);

@@ -3,7 +3,7 @@ import express from "express";
 import next from "next";
 import WebSocket from "ws";
 import { WebSocketServer } from "ws";
-import { startProlinkNetwork, setupProLinkWebsocket } from "./prolink.js";
+import { startProlinkNetwork, setupProLinkWebsocket } from "./lib/prolink.js";
 
 const app = express();
 const server = app.listen(3000);

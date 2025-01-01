@@ -37,22 +37,22 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # Force bump version and create git commit
-      - name: Force bump version and create git commit
+      # Bump version and create git commit only for master branch
+      - name: Bump version (only for master branch)
         run: |
-          # Bump version patch and store the new version in an environment variable
-          NEW_VERSION=$(npm version patch --no-git-tag-version -m "ci: Bump version to %s")
-          echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          if [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
+            # Bump version patch and store the new version in an environment variable
+            NEW_VERSION=$(npm version patch --no-git-tag-version -m "ci: Bump version to %s")
+            echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
-          # Add the changes to Git
-          git add package.json package-lock.json
+            # Add the changes to Git
+            git add package.json package-lock.json
 
-          # Only commit if there are changes
-          if ! git diff --cached --quiet; then
+            # Commit version bump and push changes
             git commit -m "ci: Bump version"
             git push origin ${{ github.ref }} --follow-tags  # Push commit and tags to the remote repository
           else
-            echo "No changes to commit"
+            echo "Skipping version bump for development branch"
           fi
 
       # Log in to GitHub Container Registry
@@ -76,22 +76,27 @@ jobs:
             docker push ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:latest
             docker push ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:${{ env.VERSION }}
           elif [[ "${GITHUB_REF}" == "refs/heads/development" ]]; then
-            # For development branch, use 'dev' and the version tag
-            docker build -t ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:dev -t ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:${{ env.VERSION }}-dev .
-            docker push ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:dev
+            # For development branch, use 'dev' and the version tag with '-dev'
+            COMMIT_HASH=$(git rev-parse --short HEAD)
+            docker build -t ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:dev-$COMMIT_HASH -t ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:${{ env.VERSION }}-dev .
+            docker push ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:dev-$COMMIT_HASH
             docker push ghcr.io/andyfarthing/andyfarthing/$REPO_NAME:${{ env.VERSION }}-dev
           fi
 
-      # Push updated version back to the repository
-      - name: Push updated version
+      # Push updated version back to the repository (only for master)
+      - name: Push updated version (only for master branch)
         run: |
-          # Only push the version change if there was a commit
-          if ! git diff --cached --quiet; then
-            git config user.name "${{ github.actor }}"
-            git config user.email "${{ github.actor }}@users.noreply.github.com"
-            git add package.json
-            git commit -m "ci: Bump version to ${{ env.VERSION }}"
-            git push origin ${{ github.ref }}
+          if [[ "${GITHUB_REF}" == "refs/heads/master" ]]; then
+            # Only push the version change if there was a commit
+            if ! git diff --cached --quiet; then
+              git config user.name "${{ github.actor }}"
+              git config user.email "${{ github.actor }}@users.noreply.github.com"
+              git add package.json
+              git commit -m "ci: Bump version to ${{ env.VERSION }}"
+              git push origin ${{ github.ref }}
+            else
+              echo "No version change to push"
+            fi
           else
-            echo "No version change to push"
+            echo "Skipping version push for development branch"
           fi
