@@ -4,9 +4,9 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "node src/server.js",
+		"dev": "node server.js",
 		"build": "next build",
-		"start": "node src/server.js",
+		"start": "node server.js",
 		"lint": "next lint"
 	},
 	"dependencies": {
