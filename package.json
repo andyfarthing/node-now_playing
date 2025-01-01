@@ -10,17 +10,17 @@
 		"lint": "next lint"
 	},
 	"dependencies": {
-		"express": "^4.21.0",
+		"express": "^4.21.2",
 		"musicbrainz-api": "^0.19.1",
-		"next": "14.2.13",
-		"react": "^18",
-		"react-dom": "^18",
+		"next": "15.1.2",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
 		"sharp": "^0.33.5",
 		"ws": "^8.18.0"
 	},
 	"devDependencies": {
 		"@types/react": "18.3.9",
-		"eslint": "^8",
-		"eslint-config-next": "14.2.13"
+		"eslint": "^8.57.1",
+		"eslint-config-next": "15.1.2"
 	}
 }
