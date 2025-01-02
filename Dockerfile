@@ -8,7 +8,7 @@ RUN apk add --no-cache git
 WORKDIR /prolink-connect
 
 # Clone the GitHub repository
-RUN git clone https://github.com/andyfarthing/prolink-connect.git .
+RUN git clone -b development https://github.com/andyfarthing/prolink-connect.git .
 
 # Install dependencies and build the project in a  single step to reduce layers
 RUN npm install && npm run build
